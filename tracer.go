@@ -1,9 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"math"
-	"os"
+	"math/rand"
 )
 
 func LinearInterpolation(t float64, color1, color2 Vec3) Vec3 {
@@ -13,35 +12,45 @@ func LinearInterpolation(t float64, color1, color2 Vec3) Vec3 {
 func BackgroundColor(ray Ray) Vec3 {
 	unitDirection := ray.Direction.AsUnitVector()
 	t := 0.5 * (unitDirection.Y + 1.0)
-	return LinearInterpolation(t, NewVec3(1.0, 1.0, 1.0), NewVec3(0.5, 0.7, 1.0))
+	return LinearInterpolation(t, Vec3{1.0, 1.0, 1.0}, Vec3{0.5, 0.7, 1.0})
+}
+
+func Trace(r Ray, world Hittable, bounces int) (color Vec3) {
+	if bounces <= 0 {
+		return BackgroundColor(r)
+	}
+
+	if rec := world.Hit(r, 0.001, math.MaxFloat64); rec != nil {
+		target := rec.p.Add(rec.normal).Add(RandVec3InUnitSphere())
+		return Trace(Ray{rec.p, target.Sub(rec.p)}, world, bounces-1).Mul(0.5)
+	}
+
+	return BackgroundColor(r)
 }
 
 func main() {
-	out, err := os.Create("traced.ppm")
+	// Image setup
+	nx := 200 // Image X
+	ny := 100 // Image Y
+	ns := 100 // Samples
+	nb := 20  // Bounces
+	out, err := NewPPM(uint(nx), uint(ny), "traced.ppm")
 	if err != nil {
-		panic(err.Error())
+		panic(err)
 	}
 	defer out.Close()
 
-	// Image setup
-	nx := 200
-	ny := 100
-	_, _ = fmt.Fprintf(out, "P3\n%d %d\n255\n", nx, ny)
-
 	// Camera setup
-	lowerLeftCorner := NewVec3(-2.0, -1.0, -1.0)
-	horizontal := NewVec3(4.0, 0.0, 0.0)
-	vertical := NewVec3(0.0, 2.0, 0.0)
-	origin := NewVec3(0.0, 0.0, 0.0)
+	camera := DefaultCamera()
 
-	// Scene setup
-	scene := NewHittableSlice(
+	// World setup
+	world := NewHittableSlice(
 		&Sphere{
-			Center: NewVec3(0.0, 0.0, -1.0),
+			Center: Vec3{0.0, 0.0, -1.0},
 			Radius: 0.5,
 		},
 		&Sphere{
-			Center: NewVec3(0.0, -100.5, -1.0),
+			Center: Vec3{0.0, -100.5, -1.0},
 			Radius: 100,
 		},
 	)
@@ -49,24 +58,28 @@ func main() {
 	// Render!
 	for j := ny - 1; j >= 0; j-- {
 		for i := 0; i < nx; i++ {
-			// Construct camera
-			u := float64(i) / float64(nx)
-			v := float64(j) / float64(ny)
-			camRay := Ray{
-				Origin:    origin,
-				Direction: lowerLeftCorner.Add(horizontal.Mul(u)).Add(vertical.Mul(v)),
+			// Sample pixel
+			var color Vec3
+			for s := 0; s < ns; s++ {
+				u := (float64(i) + rand.Float64()) / float64(nx)
+				v := (float64(j) + rand.Float64()) / float64(ny)
+				camRay := camera.Ray(u, v)
+				color = color.Add(Trace(camRay, &world, nb))
+			}
+			color = color.Div(float64(ns))
+
+			// Gamma magic (Brightens image)
+			color = Vec3{
+				X: math.Sqrt(color.X),
+				Y: math.Sqrt(color.Y),
+				Z: math.Sqrt(color.Z),
 			}
 
-			color := BackgroundColor(camRay)
-			if rec := scene.Hit(camRay, 0.0, math.MaxFloat64); rec != nil {
-				color = NewVec3(rec.normal.X+1, rec.normal.Y+1, rec.normal.Z+1).Mul(0.5)
+			// Write pixel
+			err = out.WriteVec3(color)
+			if err != nil {
+				panic(err)
 			}
-
-			ir := int(255.99 * color.X)
-			ig := int(255.99 * color.Y)
-			ib := int(255.99 * color.Z)
-			_, _ = fmt.Fprintf(out, "%d %d %d\n", ir, ig, ib)
 		}
 	}
-
 }
