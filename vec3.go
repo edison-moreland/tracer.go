@@ -23,8 +23,20 @@ func RandVec3InUnitSphere() (p Vec3) {
 	return p
 }
 
-func (v Vec3) ReflectAcross(n Vec3) Vec3 {
+func (v Vec3) Reflect(n Vec3) Vec3 {
 	return v.Sub(n.Mul(v.Dot(n) * 2))
+}
+
+func (v Vec3) Refract(n Vec3, niOverNt float64) (refracted Vec3, ok bool) {
+	// Tries to refract across n, ok=false if cant
+	uv := v.AsUnitVector()
+	dt := uv.Dot(n)
+	discriminant := 1.0 - niOverNt*niOverNt*(1-dt*dt)
+	if discriminant > 0 {
+		refracted = uv.Sub(n.Mul(dt)).Mul(niOverNt).Sub(n.Mul(math.Sqrt(discriminant)))
+		return refracted, true
+	}
+	return Vec3{}, false
 }
 
 func (v Vec3) Dot(v2 Vec3) float64 {
@@ -44,8 +56,7 @@ func (v Vec3) Length() float64 {
 }
 
 func (v Vec3) AsUnitVector() Vec3 {
-	k := 1.0 / v.Length()
-	return Vec3{v.X * k, v.Y * k, v.Z * k}
+	return v.Div(v.Length())
 }
 
 func (v Vec3) Add(v2 Vec3) Vec3 {

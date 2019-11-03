@@ -50,7 +50,7 @@ func main() {
 		&Sphere{
 			Center:   Vec3{0.0, 0.0, -1.0},
 			Radius:   0.5,
-			Material: &Lambertian{Albedo: Vec3{0.8, 0.3, 0.3}},
+			Material: &Lambertian{Albedo: Vec3{0.1, 0.2, 0.5}},
 		},
 		&Sphere{
 			Center:   Vec3{0.0, -100.5, -1.0},
@@ -60,12 +60,12 @@ func main() {
 		&Sphere{
 			Center:   Vec3{1.0, 0.0, -1.0},
 			Radius:   0.5,
-			Material: &Metal{Albedo: Vec3{0.8, 0.6, 0.2}, Diffusion: 1.0},
+			Material: &Metal{Albedo: Vec3{0.8, 0.6, 0.2}, Diffusion: 0.0},
 		},
 		&Sphere{
 			Center:   Vec3{-1.0, 0.0, -1.0},
 			Radius:   0.5,
-			Material: &Metal{Albedo: Vec3{0.8, 0.8, 0.8}, Diffusion: 0.3},
+			Material: &Dielectric{RefractiveIndex: 1},
 		},
 	)
 

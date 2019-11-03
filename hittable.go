@@ -37,7 +37,7 @@ func (s *Sphere) Hit(r Ray, tMin, tMax float64) *HitRecord {
 	if t := (-b - math.Sqrt(discriminant)) / a; t < tMax && t > tMin {
 		rec := &HitRecord{}
 		rec.T = t
-		rec.P = r.PointOnRay(rec.T)
+		rec.P = r.PointOnRay(t)
 		rec.Normal = rec.P.Sub(s.Center).Div(s.Radius)
 		rec.Material = s.Material
 		return rec
@@ -45,7 +45,8 @@ func (s *Sphere) Hit(r Ray, tMin, tMax float64) *HitRecord {
 
 	if t := (-b + math.Sqrt(discriminant)) / a; t < tMax && t > tMin {
 		rec := &HitRecord{}
-		rec.P = r.PointOnRay(rec.T)
+		rec.T = t
+		rec.P = r.PointOnRay(t)
 		rec.Normal = rec.P.Sub(s.Center).Div(s.Radius)
 		rec.Material = s.Material
 		return rec

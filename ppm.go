@@ -39,7 +39,7 @@ func (p *PPM) WriteVec3(color Vec3) error {
 }
 
 func (p *PPM) WriteColor(r, g, b int) error {
-	if r < 0 || g < 0 || b < 0 {
+	if (r < 0 || g < 0 || b < 0) || (r > 255 || g > 255 || b > 255) {
 		return fmt.Errorf("color out of range: (%v, %v, %v)", r, g, b)
 	}
 
