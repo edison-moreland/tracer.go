@@ -5,8 +5,9 @@ import (
 )
 
 type HitRecord struct {
-	t         float64
-	p, normal Vec3
+	T         float64
+	P, Normal Vec3
+	Material  Material
 }
 
 // Future improvement: rename to "object" or "geometry" or something else, hittable seems so awkward
@@ -17,8 +18,9 @@ type Hittable interface {
 }
 
 type Sphere struct {
-	Center Vec3
-	Radius float64
+	Center   Vec3
+	Radius   float64
+	Material Material
 }
 
 func (s *Sphere) Hit(r Ray, tMin, tMax float64) *HitRecord {
@@ -34,16 +36,18 @@ func (s *Sphere) Hit(r Ray, tMin, tMax float64) *HitRecord {
 
 	if t := (-b - math.Sqrt(discriminant)) / a; t < tMax && t > tMin {
 		rec := &HitRecord{}
-		rec.t = t
-		rec.p = r.PointOnRay(rec.t)
-		rec.normal = rec.p.Sub(s.Center).Div(s.Radius)
+		rec.T = t
+		rec.P = r.PointOnRay(rec.T)
+		rec.Normal = rec.P.Sub(s.Center).Div(s.Radius)
+		rec.Material = s.Material
 		return rec
 	}
 
 	if t := (-b + math.Sqrt(discriminant)) / a; t < tMax && t > tMin {
 		rec := &HitRecord{}
-		rec.p = r.PointOnRay(rec.t)
-		rec.normal = rec.p.Sub(s.Center).Div(s.Radius)
+		rec.P = r.PointOnRay(rec.T)
+		rec.Normal = rec.P.Sub(s.Center).Div(s.Radius)
+		rec.Material = s.Material
 		return rec
 	}
 
@@ -71,7 +75,7 @@ func (h *HittableSlice) Hit(r Ray, tMin, tMax float64) *HitRecord {
 	closest := tMax
 	for _, hittable := range h.hittables {
 		if newRec := hittable.Hit(r, tMin, closest); newRec != nil {
-			closest = newRec.t
+			closest = newRec.T
 			rec = newRec
 		}
 	}

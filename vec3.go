@@ -23,6 +23,10 @@ func RandVec3InUnitSphere() (p Vec3) {
 	return p
 }
 
+func (v Vec3) ReflectAcross(n Vec3) Vec3 {
+	return v.Sub(n.Mul(v.Dot(n) * 2))
+}
+
 func (v Vec3) Dot(v2 Vec3) float64 {
 	return v.X*v2.X + v.Y*v2.Y + v.Z*v2.Z
 }

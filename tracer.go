@@ -15,17 +15,19 @@ func BackgroundColor(ray Ray) Vec3 {
 	return LinearInterpolation(t, Vec3{1.0, 1.0, 1.0}, Vec3{0.5, 0.7, 1.0})
 }
 
-func Trace(r Ray, world Hittable, bounces int) (color Vec3) {
+func Trace(ray Ray, world Hittable, bounces int) (color Vec3) {
 	if bounces <= 0 {
-		return BackgroundColor(r)
+		return Vec3{}
 	}
 
-	if rec := world.Hit(r, 0.001, math.MaxFloat64); rec != nil {
-		target := rec.p.Add(rec.normal).Add(RandVec3InUnitSphere())
-		return Trace(Ray{rec.p, target.Sub(rec.p)}, world, bounces-1).Mul(0.5)
+	if rec := world.Hit(ray, 0.001, math.MaxFloat64); rec != nil {
+		if bounce := rec.Material.Scatter(ray, rec); bounce != nil {
+			return Trace(bounce.Scattered, world, bounces-1).MulByVec(bounce.Attenuation)
+		}
+		return Vec3{}
 	}
 
-	return BackgroundColor(r)
+	return BackgroundColor(ray)
 }
 
 func main() {
@@ -46,12 +48,24 @@ func main() {
 	// World setup
 	world := NewHittableSlice(
 		&Sphere{
-			Center: Vec3{0.0, 0.0, -1.0},
-			Radius: 0.5,
+			Center:   Vec3{0.0, 0.0, -1.0},
+			Radius:   0.5,
+			Material: &Lambertian{Albedo: Vec3{0.8, 0.3, 0.3}},
 		},
 		&Sphere{
-			Center: Vec3{0.0, -100.5, -1.0},
-			Radius: 100,
+			Center:   Vec3{0.0, -100.5, -1.0},
+			Radius:   100,
+			Material: &Lambertian{Albedo: Vec3{0.8, 0.8, 0.0}},
+		},
+		&Sphere{
+			Center:   Vec3{1.0, 0.0, -1.0},
+			Radius:   0.5,
+			Material: &Metal{Albedo: Vec3{0.8, 0.6, 0.2}, Diffusion: 1.0},
+		},
+		&Sphere{
+			Center:   Vec3{-1.0, 0.0, -1.0},
+			Radius:   0.5,
+			Material: &Metal{Albedo: Vec3{0.8, 0.8, 0.8}, Diffusion: 0.3},
 		},
 	)
 
