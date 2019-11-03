@@ -13,3 +13,5 @@
 
 # Tracer outputs
 *.ppm
+
+.idea/
