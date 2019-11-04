@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
 )
@@ -33,15 +32,14 @@ func Trace(ray Ray, world Hittable, bounces int) (color Vec3) {
 
 func main() {
 	// Image setup
-	nx := 180 * 2 // Image X
-	ny := 135 * 2 // Image Y
-	ns := 100     // Samples
-	nb := 20      // Bounces
-	out, err := NewPPM(uint(nx), uint(ny), "traced.ppm")
+	nx := 180 // Image X
+	ny := 135 // Image Y
+	ns := 10  // Samples
+	nb := 20  // Bounces
+	out, err := NewImage(nx, ny)
 	if err != nil {
 		panic(err)
 	}
-	defer out.Close()
 
 	// Camera setup
 	lookFrom := Vec3{13, 2, 3}
@@ -64,7 +62,7 @@ func main() {
 
 	// Render!
 	println("Rendering...")
-	for j := ny - 1; j >= 0; j-- {
+	for j := 0; j < ny; j++ {
 		for i := 0; i < nx; i++ {
 			// Sample pixel
 			var color Vec3
@@ -84,11 +82,13 @@ func main() {
 			}
 
 			// Write pixel
-			err = out.WriteVec3(color)
-			if err != nil {
-				fmt.Printf("Broke on pixel (%v, %v)", i, j)
-				panic(err)
-			}
+			out.SetVec3(color, i, j)
 		}
+	}
+
+	err = out.ExportPNG("traced.png")
+	if err != nil {
+		println("Failed to export image")
+		panic(err)
 	}
 }
