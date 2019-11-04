@@ -1,8 +1,11 @@
 package main
 
-import "math/rand"
+import (
+	"math"
+	"math/rand"
+)
 
-func RandomScene() HittableSlice {
+func RandomWorld() HittableSlice {
 	// World setup
 	world := NewHittableSlice(
 		// A place for spheres to sit
@@ -64,4 +67,60 @@ func RandomScene() HittableSlice {
 	}
 
 	return world
+}
+
+func LinearInterpolation(t float64, color1, color2 Vec3) Vec3 {
+	return color1.Mul(1.0 - t).Add(color2.Mul(t))
+}
+
+func BackgroundColor(ray Ray) Vec3 {
+	unitDirection := ray.Direction.AsUnitVector()
+	t := 0.5 * (unitDirection.Y + 1.0)
+	return LinearInterpolation(t, Vec3{1.0, 1.0, 1.0}, Vec3{0.5, 0.7, 1.0})
+}
+
+func Trace(ray Ray, world Hittable, bounces int) (color Vec3) {
+	if bounces <= 0 {
+		return Vec3{}
+	}
+
+	if rec := world.Hit(ray, 0.001, math.MaxFloat64); rec != nil {
+		if bounce := rec.Material.Scatter(ray, rec); bounce != nil {
+			return Trace(bounce.Scattered, world, bounces-1).MulByVec(bounce.Attenuation)
+		}
+		return Vec3{}
+	}
+
+	return BackgroundColor(ray)
+}
+
+type RenderOptions struct {
+	CameraOptions
+	Samples, Bounces int
+}
+
+// Scene describes everything needed to render and image
+type Scene struct {
+	RenderOptions
+	camera Camera
+	world  Hittable
+}
+
+func NewScene(options RenderOptions, world Hittable) Scene {
+	return Scene{
+		RenderOptions: options,
+		camera:        NewCamera(options.CameraOptions),
+		world:         world,
+	}
+}
+
+func (s *Scene) SamplePixel(x, y, xMax, yMax float64) Vec3 {
+	var color Vec3
+	for i := 0; i < s.Samples; i++ {
+		u := (x + rand.Float64()) / xMax
+		v := (y + rand.Float64()) / yMax
+		camRay := s.camera.Ray(u, v)
+		color = color.Add(Trace(camRay, s.world, s.Bounces))
+	}
+	return color.Div(float64(s.Samples))
 }
