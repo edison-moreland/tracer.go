@@ -15,18 +15,18 @@ type Image struct {
 	Width, Height int
 }
 
-func NewImage(width, height int) (Image, error) {
+func NewImage(width, height int) Image {
 	return Image{
 		RGBA:   image.NewRGBA(image.Rect(0, 0, width, height)),
 		Width:  width,
 		Height: height,
-	}, nil
+	}
 }
 
-func (i *Image) SetVec3(vecColor Vec3, x, y int) {
+func RGBASetVec3(i *image.RGBA, vecColor Vec3, x, y int) {
 	// Map 0-1 to 0-MaxUint8 and XYZ to RGB
 	max := float64(math.MaxUint8)
-	i.RGBA.Set(x, y, color.RGBA{
+	i.Set(x, y, color.RGBA{
 		R: uint8(max * vecColor.X),
 		G: uint8(max * vecColor.Y),
 		B: uint8(max * vecColor.Z),

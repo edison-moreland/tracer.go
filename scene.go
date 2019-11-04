@@ -1,6 +1,7 @@
 package main
 
 import (
+	"image"
 	"math"
 	"math/rand"
 )
@@ -115,12 +116,38 @@ func NewScene(options RenderOptions, world Hittable) Scene {
 }
 
 func (s *Scene) SamplePixel(x, y, xMax, yMax float64) Vec3 {
+	// Average multiple samples with random offsets
 	var color Vec3
 	for i := 0; i < s.Samples; i++ {
+		// Translate pixel to camera plane
 		u := (x + rand.Float64()) / xMax
 		v := (y + rand.Float64()) / yMax
+
+		// New ray from camera origin to point on camera plane
 		camRay := s.camera.Ray(u, v)
+
+		// Bounce around
 		color = color.Add(Trace(camRay, s.world, s.Bounces))
 	}
 	return color.Div(float64(s.Samples))
+}
+
+func (s *Scene) RenderToRGBA(img *image.RGBA) {
+	bounds := img.Bounds()
+	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			// Sample pixel
+			color := s.SamplePixel(float64(x), float64(y), float64(bounds.Max.X), float64(bounds.Max.Y))
+
+			// Gamma magic (Brightens image)
+			color = Vec3{
+				X: math.Sqrt(color.X),
+				Y: math.Sqrt(color.Y),
+				Z: math.Sqrt(color.Z),
+			}
+
+			// Write pixel
+			RGBASetVec3(img, color, x, y)
+		}
+	}
 }

@@ -1,17 +1,12 @@
 package main
 
 import (
-	"math"
+	"image"
 )
 
 func main() {
 	// Image setup
-	nx := 180 // Image X
-	ny := 135 // Image Y
-	out, err := NewImage(nx, ny)
-	if err != nil {
-		panic(err)
-	}
+	img := NewImage(180, 135)
 
 	// Camera setup
 	options := RenderOptions{
@@ -20,7 +15,7 @@ func main() {
 			LookAt:        Vec3{0.0, 0.0, 0.0},
 			Up:            Vec3{0, 1, 0},
 			Fov:           25,
-			Aspect:        float64(nx) / float64(ny),
+			Aspect:        float64(img.Rect.Max.X) / float64(img.Rect.Max.Y),
 			Aperture:      0.05,
 			FocusDistance: 10,
 		},
@@ -30,25 +25,13 @@ func main() {
 	world := RandomWorld()
 	scene := NewScene(options, &world)
 
+	// Little test
+	sub := img.SubImage(img.Bounds()).(*image.RGBA)
+
 	// Render!
-	for j := 0; j < ny; j++ {
-		for i := 0; i < nx; i++ {
-			// Sample pixel
-			color := scene.SamplePixel(float64(i), float64(j), float64(nx), float64(ny))
+	scene.RenderToRGBA(sub)
 
-			// Gamma magic (Brightens image)
-			color = Vec3{
-				X: math.Sqrt(color.X),
-				Y: math.Sqrt(color.Y),
-				Z: math.Sqrt(color.Z),
-			}
-
-			// Write pixel
-			out.SetVec3(color, i, j)
-		}
-	}
-
-	err = out.ExportPNG("traced.png")
+	err := img.ExportPNG("traced.png")
 	if err != nil {
 		println("Failed to export image")
 		panic(err)
