@@ -23,6 +23,16 @@ func RandVec3InUnitSphere() (p Vec3) {
 	return p
 }
 
+func RandVec3InUnitDisk() (p Vec3) {
+	for {
+		p = Vec3{rand.Float64(), rand.Float64(), 0}.Mul(2.0).Sub(Vec3{1, 1, 0})
+		if p.SquaredLength() >= 1.0 {
+			break
+		}
+	}
+	return p
+}
+
 func (v Vec3) Reflect(n Vec3) Vec3 {
 	return v.Sub(n.Mul(v.Dot(n) * 2))
 }
@@ -44,7 +54,11 @@ func (v Vec3) Dot(v2 Vec3) float64 {
 }
 
 func (v Vec3) Cross(v2 Vec3) Vec3 {
-	return Vec3{v.Y*v2.Z - v.Z*v2.Y, -(v.X*v2.Z - v.Z*v2.X), v.X*v2.Y - v.Y*v2.X}
+	return Vec3{
+		v.Y*v2.Z - v.Z*v2.Y,
+		v.Z*v2.X - v.X*v2.Z,
+		v.X*v2.Y - v.Y*v2.X,
+	}
 }
 
 func (v Vec3) SquaredLength() float64 {

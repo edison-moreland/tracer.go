@@ -35,7 +35,7 @@ func main() {
 	nx := 200 // Image X
 	ny := 100 // Image Y
 	ns := 100 // Samples
-	nb := 20  // Bounces
+	nb := 50  // Bounces
 	out, err := NewPPM(uint(nx), uint(ny), "traced.ppm")
 	if err != nil {
 		panic(err)
@@ -43,7 +43,18 @@ func main() {
 	defer out.Close()
 
 	// Camera setup
-	camera := DefaultCamera()
+	lookFrom := Vec3{3, 3, 2}
+	lookAt := Vec3{0, 0, -1}
+	focusDistance := lookFrom.Sub(lookAt).Length()
+	camera := NewCamera(
+		lookFrom,
+		lookAt,
+		Vec3{0, 1, 0},
+		20,
+		float64(nx)/float64(ny),
+		2.0,
+		focusDistance,
+	)
 
 	// World setup
 	world := NewHittableSlice(
