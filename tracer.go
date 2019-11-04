@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 )
@@ -32,10 +33,10 @@ func Trace(ray Ray, world Hittable, bounces int) (color Vec3) {
 
 func main() {
 	// Image setup
-	nx := 200 // Image X
-	ny := 100 // Image Y
-	ns := 100 // Samples
-	nb := 50  // Bounces
+	nx := 180 * 2 // Image X
+	ny := 135 * 2 // Image Y
+	ns := 100     // Samples
+	nb := 20      // Bounces
 	out, err := NewPPM(uint(nx), uint(ny), "traced.ppm")
 	if err != nil {
 		panic(err)
@@ -43,44 +44,26 @@ func main() {
 	defer out.Close()
 
 	// Camera setup
-	lookFrom := Vec3{3, 3, 2}
-	lookAt := Vec3{0, 0, -1}
-	focusDistance := lookFrom.Sub(lookAt).Length()
-	camera := NewCamera(
-		lookFrom,
-		lookAt,
-		Vec3{0, 1, 0},
-		20,
-		float64(nx)/float64(ny),
-		2.0,
-		focusDistance,
-	)
+	lookFrom := Vec3{13, 2, 3}
+	lookAt := Vec3{0.0, 0.0, 0.0}
+	focusDistance := float64(10)
+	options := CameraOptions{
+		LookFrom:      lookFrom,
+		LookAt:        lookAt,
+		Up:            Vec3{0, 1, 0},
+		Fov:           25,
+		Aspect:        float64(nx) / float64(ny),
+		Aperture:      0.05,
+		FocusDistance: focusDistance,
+	}
+	camera := NewCamera(options)
 
 	// World setup
-	world := NewHittableSlice(
-		&Sphere{
-			Center:   Vec3{0.0, 0.0, -1.0},
-			Radius:   0.5,
-			Material: &Lambertian{Albedo: Vec3{0.1, 0.2, 0.5}},
-		},
-		&Sphere{
-			Center:   Vec3{0.0, -100.5, -1.0},
-			Radius:   100,
-			Material: &Lambertian{Albedo: Vec3{0.8, 0.8, 0.0}},
-		},
-		&Sphere{
-			Center:   Vec3{1.0, 0.0, -1.0},
-			Radius:   0.5,
-			Material: &Metal{Albedo: Vec3{0.8, 0.6, 0.2}, Diffusion: 0.0},
-		},
-		&Sphere{
-			Center:   Vec3{-1.0, 0.0, -1.0},
-			Radius:   0.5,
-			Material: &Dielectric{RefractiveIndex: 1},
-		},
-	)
+	println("Generating scene...")
+	world := RandomScene()
 
 	// Render!
+	println("Rendering...")
 	for j := ny - 1; j >= 0; j-- {
 		for i := 0; i < nx; i++ {
 			// Sample pixel
@@ -103,6 +86,7 @@ func main() {
 			// Write pixel
 			err = out.WriteVec3(color)
 			if err != nil {
+				fmt.Printf("Broke on pixel (%v, %v)", i, j)
 				panic(err)
 			}
 		}

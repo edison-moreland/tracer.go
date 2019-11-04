@@ -8,6 +8,11 @@ type Camera struct {
 	lensRadius                                       float64
 }
 
+type CameraOptions struct {
+	LookFrom, LookAt, Up                 Vec3
+	Fov, Aspect, Aperture, FocusDistance float64
+}
+
 func (c *Camera) Ray(s, t float64) Ray {
 	rd := RandVec3InUnitDisk().Mul(c.lensRadius)
 	offset := c.u.Mul(rd.X).Add(c.v.Mul(rd.Y))
@@ -17,21 +22,23 @@ func (c *Camera) Ray(s, t float64) Ray {
 	}
 }
 
-func NewCamera(lookFrom, lookAt, vup Vec3, fov, aspect, aperture, focusDistance float64) Camera {
-	theta := fov * math.Pi / 180
+func NewCamera(opts CameraOptions) Camera {
+	theta := opts.Fov * math.Pi / 180
 	halfHeight := math.Tan(theta / 2)
-	halfWidth := aspect * halfHeight
+	halfWidth := opts.Aspect * halfHeight
 
-	w := lookFrom.Sub(lookAt).AsUnitVector()
-	u := vup.Cross(w).AsUnitVector()
+	w := opts.LookFrom.Sub(opts.LookAt).AsUnitVector()
+	u := opts.Up.Cross(w).AsUnitVector()
 	v := w.Cross(u)
 
 	return Camera{
-		Origin:     lookFrom,
-		lowerLeft:  lookFrom.Sub(u.Mul(halfWidth * focusDistance)).Sub(v.Mul(halfHeight * focusDistance)).Sub(w.Mul(focusDistance)),
-		horizontal: u.Mul(2 * halfWidth * focusDistance),
-		vertical:   v.Mul(2 * halfHeight * focusDistance),
-		lensRadius: aperture / 2,
-		w:          w, u: u, v: v,
+		Origin:     opts.LookFrom,
+		lowerLeft:  opts.LookFrom.Sub(u.Mul(halfWidth * opts.FocusDistance)).Sub(v.Mul(halfHeight * opts.FocusDistance)).Sub(w.Mul(opts.FocusDistance)),
+		horizontal: u.Mul(2 * halfWidth * opts.FocusDistance),
+		vertical:   v.Mul(2 * halfHeight * opts.FocusDistance),
+		lensRadius: opts.Aperture / 2,
+		w:          w,
+		u:          u,
+		v:          v,
 	}
 }
