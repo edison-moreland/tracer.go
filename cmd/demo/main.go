@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image"
 	"math/rand"
+	"runtime"
 	"sync"
 	"time"
 
@@ -111,7 +112,7 @@ func main() {
 
 	// Little test
 	start := time.Now()
-	n := 4
+	n := runtime.NumCPU()
 	var wg sync.WaitGroup
 	wg.Add(n)
 
