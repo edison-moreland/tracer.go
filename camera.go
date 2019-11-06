@@ -27,7 +27,7 @@ func (c *Camera) Ray(s, t float64) Ray {
 }
 
 func NewCamera(opts CameraOptions) Camera {
-	theta := opts.Fov * math.Pi / 180
+	theta := mgl64.DegToRad(opts.Fov)
 	halfHeight := math.Tan(theta / 2)
 	halfWidth := opts.Aspect * halfHeight
 

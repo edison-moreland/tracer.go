@@ -23,7 +23,7 @@ func Trace(ray Ray, world Primitive, bounces int) (color mgl64.Vec3) {
 		return mgl64.Vec3{}
 	}
 
-	if rec := world.Hit(ray, 0.001, math.MaxFloat64); rec != nil {
+	if rec := world.Hit(ray, mgl64.Epsilon, math.MaxFloat64); rec != nil {
 		if bounce := rec.Material.Scatter(ray, rec); bounce != nil {
 			return MulByVec(Trace(bounce.Scattered, world, bounces-1), bounce.Attenuation)
 		}
@@ -54,13 +54,13 @@ func NewScene(options RenderOptions, world Primitive) Scene {
 	}
 }
 
-func (s *Scene) SamplePixel(x, y, xMax, yMax float64) mgl64.Vec3 {
+func (s *Scene) SamplePixel(x, y float64) mgl64.Vec3 {
 	// Average multiple samples with random offsets
 	var color mgl64.Vec3
 	for i := 0; i < s.Samples; i++ {
 		// Translate pixel to camera plane
-		u := (x + rand.Float64()) / xMax
-		v := (y + rand.Float64()) / yMax
+		u := (x + rand.Float64()) / float64(s.Width)
+		v := (y + rand.Float64()) / float64(s.Height)
 
 		// New ray from camera origin to point on camera plane
 		camRay := s.camera.Ray(u, v)
@@ -76,13 +76,13 @@ func (s *Scene) RenderToRGBA(img *image.RGBA) {
 	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
 		for x := bounds.Min.X; x < bounds.Max.X; x++ {
 			// Sample pixel
-			color := s.SamplePixel(float64(x), float64(y), float64(s.Width), float64(s.Height))
+			color := s.SamplePixel(float64(x), float64(y))
 
 			// Gamma magic (Brightens image)
 			color = mgl64.Vec3{
-				math.Sqrt(color.X()),
-				math.Sqrt(color.Y()),
-				math.Sqrt(color.Z()),
+				math.Sqrt(color[0]),
+				math.Sqrt(color[1]),
+				math.Sqrt(color[2]),
 			}
 
 			// Write pixel

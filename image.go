@@ -33,9 +33,9 @@ func RGBASetVec3(i *image.RGBA, vecColor mgl64.Vec3, x, y int) {
 	// Map 0-1 to 0-MaxUint8 and XYZ to RGB
 	max := float64(math.MaxUint8)
 	i.Set(x, y, color.RGBA{
-		R: uint8(max * vecColor.X()),
-		G: uint8(max * vecColor.Y()),
-		B: uint8(max * vecColor.Z()),
+		R: uint8(max * vecColor[0]),
+		G: uint8(max * vecColor[1]),
+		B: uint8(max * vecColor[2]),
 		A: 0xff,
 	})
 }
