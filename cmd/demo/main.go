@@ -1,8 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"image"
 	"math/rand"
+	"sync"
+	"time"
 
 	"github.com/go-gl/mathgl/mgl64"
 
@@ -73,6 +76,18 @@ func RandomWorld() tracer.Primitives {
 	return world
 }
 
+func ToColumns(rect image.Rectangle, n int) []image.Rectangle {
+	x0, y0 := rect.Min.X, rect.Min.Y
+	x1, y1 := rect.Max.X, rect.Max.Y
+
+	rects := make([]image.Rectangle, n)
+	for i := 0; i < n; i++ {
+		rects[i] = image.Rect(x0+(x1/n)*i, y0, x0+(x1/n)*(i+1), y1)
+	}
+
+	return rects
+}
+
 func main() {
 	// Image setup
 	img := tracer.NewImage(180, 135)
@@ -95,10 +110,24 @@ func main() {
 	scene := tracer.NewScene(options, &world)
 
 	// Little test
-	sub := img.SubImage(img.Bounds()).(*image.RGBA)
+	start := time.Now()
+	n := 4
+	var wg sync.WaitGroup
+	wg.Add(n)
 
-	// Render!
-	scene.RenderToRGBA(sub)
+	for _, col := range ToColumns(img.Bounds(), n) {
+		sub := img.SubImage(col).(*image.RGBA)
+
+		// Render!
+		go func() {
+			scene.RenderToRGBA(sub, img.Width, img.Height)
+			wg.Done()
+		}()
+	}
+
+	wg.Wait()
+	elapsed := time.Since(start)
+	fmt.Print(elapsed.Seconds())
 
 	err := img.ExportPNG("traced.png")
 	if err != nil {

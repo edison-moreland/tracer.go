@@ -70,12 +70,12 @@ func (s *Scene) SamplePixel(x, y, xMax, yMax float64) mgl64.Vec3 {
 	return Div(color, float64(s.Samples))
 }
 
-func (s *Scene) RenderToRGBA(img *image.RGBA) {
+func (s *Scene) RenderToRGBA(img *image.RGBA, xMax, yMax int) {
 	bounds := img.Bounds()
 	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
 		for x := bounds.Min.X; x < bounds.Max.X; x++ {
 			// Sample pixel
-			color := s.SamplePixel(float64(x), float64(y), float64(bounds.Max.X), float64(bounds.Max.Y))
+			color := s.SamplePixel(float64(x), float64(y), float64(xMax), float64(yMax))
 
 			// Gamma magic (Brightens image)
 			color = mgl64.Vec3{
