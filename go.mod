@@ -1,4 +1,4 @@
-module tracer/v2
+module github.com/edison-moreland/tracer.go
 
 go 1.13
 

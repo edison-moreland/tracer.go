@@ -1,4 +1,4 @@
-package main
+package tracer
 
 type Ray struct {
 	Origin, Direction Vec3
