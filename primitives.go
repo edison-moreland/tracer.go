@@ -13,7 +13,7 @@ type HitRecord struct {
 }
 
 // Future improvement: rename to "object" or "geometry" or something else, hittable seems so awkward
-type Hittable interface {
+type Primitive interface {
 	// Future improvement: return *HitRecord instead of bool, nil return mean no hit found
 	// Disadvantage: a new HitRecord is allocated every time a ray hits an object, instead of just once
 	Hit(r Ray, tMin, tMax float64) *HitRecord
@@ -57,26 +57,26 @@ func (s *Sphere) Hit(r Ray, tMin, tMax float64) *HitRecord {
 	return nil
 }
 
-type HittableSlice struct {
-	hittables []Hittable
+type Primitives struct {
+	p []Primitive
 }
 
-func NewHittableSlice(hittables ...Hittable) HittableSlice {
-	return HittableSlice{hittables: hittables}
+func NewPrimitiveSlice(primitives ...Primitive) Primitives {
+	return Primitives{p: primitives}
 }
 
-func (h *HittableSlice) AddHittable(hittable Hittable) {
-	h.hittables = append(h.hittables, hittable)
+func (p *Primitives) AddPrimitive(primitive Primitive) {
+	p.p = append(p.p, primitive)
 }
 
-func (h *HittableSlice) AddHittables(hittables ...Hittable) {
-	h.hittables = append(h.hittables, hittables...)
+func (p *Primitives) AddPrimitives(primitives ...Primitive) {
+	p.p = append(p.p, primitives...)
 }
 
-func (h *HittableSlice) Hit(r Ray, tMin, tMax float64) *HitRecord {
+func (p *Primitives) Hit(r Ray, tMin, tMax float64) *HitRecord {
 	var rec *HitRecord = nil
 	closest := tMax
-	for _, hittable := range h.hittables {
+	for _, hittable := range p.p {
 		if newRec := hittable.Hit(r, tMin, closest); newRec != nil {
 			closest = newRec.T
 			rec = newRec

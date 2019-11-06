@@ -18,7 +18,7 @@ func BackgroundColor(ray Ray) mgl64.Vec3 {
 	return LinearInterpolation(t, mgl64.Vec3{1.0, 1.0, 1.0}, mgl64.Vec3{0.5, 0.7, 1.0})
 }
 
-func Trace(ray Ray, world Hittable, bounces int) (color mgl64.Vec3) {
+func Trace(ray Ray, world Primitive, bounces int) (color mgl64.Vec3) {
 	if bounces <= 0 {
 		return mgl64.Vec3{}
 	}
@@ -42,10 +42,10 @@ type RenderOptions struct {
 type Scene struct {
 	RenderOptions
 	camera Camera
-	world  Hittable
+	world  Primitive
 }
 
-func NewScene(options RenderOptions, world Hittable) Scene {
+func NewScene(options RenderOptions, world Primitive) Scene {
 	return Scene{
 		RenderOptions: options,
 		camera:        NewCamera(options.CameraOptions),

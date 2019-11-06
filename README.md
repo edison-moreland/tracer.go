@@ -4,7 +4,6 @@ Ray tracer, written in Go (Clever name right?). Starting off with "Ray Tracing i
 Enjoy :)
 
 Next Steps:
-- [ ] Replace handmade image and vector libraries with better non-handmade versions 
 - [ ] Scene File
 - [ ] Ray Tracing: The Next Week
 - [ ] More Primitives

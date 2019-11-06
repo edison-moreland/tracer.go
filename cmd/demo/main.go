@@ -9,9 +9,9 @@ import (
 	"github.com/edison-moreland/tracer.go"
 )
 
-func RandomWorld() tracer.HittableSlice {
+func RandomWorld() tracer.Primitives {
 	// World setup
-	world := tracer.NewHittableSlice(
+	world := tracer.NewPrimitiveSlice(
 		// A place for spheres to sit
 		&tracer.Sphere{
 			Center:   mgl64.Vec3{0.0, -1000, 0.0},
@@ -62,7 +62,7 @@ func RandomWorld() tracer.HittableSlice {
 				material = &tracer.Dielectric{RefractiveIndex: 1.5}
 			}
 
-			world.AddHittable(&tracer.Sphere{
+			world.AddPrimitive(&tracer.Sphere{
 				Center:   mgl64.Vec3{float64(a) + 0.9*rand.Float64(), 0.2, float64(b) + 0.9*rand.Float64()},
 				Radius:   0.2,
 				Material: material,
