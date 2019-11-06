@@ -12,16 +12,20 @@ import (
 	"github.com/disintegration/imaging"
 )
 
-type Image struct {
-	*image.RGBA
+type ImageOptions struct {
 	Width, Height int
+	Path          string
 }
 
-func NewImage(width, height int) Image {
+type Image struct {
+	ImageOptions
+	*image.RGBA
+}
+
+func NewImage(options ImageOptions) Image {
 	return Image{
-		RGBA:   image.NewRGBA(image.Rect(0, 0, width, height)),
-		Width:  width,
-		Height: height,
+		ImageOptions: options,
+		RGBA:         image.NewRGBA(image.Rect(0, 0, options.Width, options.Height)),
 	}
 }
 
@@ -36,11 +40,11 @@ func RGBASetVec3(i *image.RGBA, vecColor mgl64.Vec3, x, y int) {
 	})
 }
 
-func (i *Image) ExportPNG(path string) error {
+func (i *Image) Export() error {
 	// Flip image, things are rendered upside down
 	flipped := imaging.FlipV(i)
 
-	file, err := os.Create(path)
+	file, err := os.Create(i.Path)
 	if err != nil {
 		return err
 	}

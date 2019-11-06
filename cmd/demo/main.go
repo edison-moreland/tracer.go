@@ -90,25 +90,30 @@ func ToColumns(rect image.Rectangle, n int) []image.Rectangle {
 }
 
 func main() {
-	// Image setup
-	img := tracer.NewImage(180, 135)
-
-	// Camera setup
+	// Render Setup
 	options := tracer.RenderOptions{
 		CameraOptions: tracer.CameraOptions{
 			LookFrom:      mgl64.Vec3{13, 2, 3},
 			LookAt:        mgl64.Vec3{0, 0, 0},
 			Up:            mgl64.Vec3{0, 1, 0},
 			Fov:           25,
-			Aspect:        float64(img.Rect.Max.X) / float64(img.Rect.Max.Y),
+			Aspect:        float64(300) / float64(150),
 			Aperture:      0.05,
 			FocusDistance: 10,
+		},
+		ImageOptions: tracer.ImageOptions{
+			Width:  300,
+			Height: 150,
+			Path:   "traced.png",
 		},
 		Samples: 10,
 		Bounces: 20,
 	}
 	world := RandomWorld()
 	scene := tracer.NewScene(options, &world)
+
+	// Image setup
+	img := tracer.NewImage(options.ImageOptions)
 
 	// Little test
 	start := time.Now()
@@ -121,7 +126,7 @@ func main() {
 
 		// Render!
 		go func() {
-			scene.RenderToRGBA(sub, img.Width, img.Height)
+			scene.RenderToRGBA(sub)
 			wg.Done()
 		}()
 	}
@@ -130,7 +135,7 @@ func main() {
 	elapsed := time.Since(start)
 	fmt.Print(elapsed.Seconds())
 
-	err := img.ExportPNG("traced.png")
+	err := img.Export()
 	if err != nil {
 		println("Failed to export image")
 		panic(err)

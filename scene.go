@@ -35,6 +35,7 @@ func Trace(ray Ray, world Primitive, bounces int) (color mgl64.Vec3) {
 
 type RenderOptions struct {
 	CameraOptions
+	ImageOptions
 	Samples, Bounces int
 }
 
@@ -70,12 +71,12 @@ func (s *Scene) SamplePixel(x, y, xMax, yMax float64) mgl64.Vec3 {
 	return Div(color, float64(s.Samples))
 }
 
-func (s *Scene) RenderToRGBA(img *image.RGBA, xMax, yMax int) {
+func (s *Scene) RenderToRGBA(img *image.RGBA) {
 	bounds := img.Bounds()
 	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
 		for x := bounds.Min.X; x < bounds.Max.X; x++ {
 			// Sample pixel
-			color := s.SamplePixel(float64(x), float64(y), float64(xMax), float64(yMax))
+			color := s.SamplePixel(float64(x), float64(y), float64(s.Width), float64(s.Height))
 
 			// Gamma magic (Brightens image)
 			color = mgl64.Vec3{
