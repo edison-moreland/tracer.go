@@ -2,11 +2,13 @@ package tracer
 
 import (
 	"math"
+
+	"github.com/go-gl/mathgl/mgl64"
 )
 
 type HitRecord struct {
 	T         float64
-	P, Normal Vec3
+	P, Normal mgl64.Vec3
 	Material  Material
 }
 
@@ -18,16 +20,16 @@ type Hittable interface {
 }
 
 type Sphere struct {
-	Center   Vec3
+	Center   mgl64.Vec3
 	Radius   float64
 	Material Material
 }
 
 func (s *Sphere) Hit(r Ray, tMin, tMax float64) *HitRecord {
 	oc := r.Origin.Sub(s.Center)
-	a := r.Direction.SquaredLength()
+	a := r.Direction.LenSqr()
 	b := oc.Dot(r.Direction)
-	c := oc.SquaredLength() - s.Radius*s.Radius
+	c := oc.LenSqr() - s.Radius*s.Radius
 	discriminant := b*b - a*c
 
 	if discriminant < 0 {
@@ -38,7 +40,7 @@ func (s *Sphere) Hit(r Ray, tMin, tMax float64) *HitRecord {
 		rec := &HitRecord{}
 		rec.T = t
 		rec.P = r.PointOnRay(t)
-		rec.Normal = rec.P.Sub(s.Center).Div(s.Radius)
+		rec.Normal = Div(rec.P.Sub(s.Center), s.Radius)
 		rec.Material = s.Material
 		return rec
 	}
@@ -47,7 +49,7 @@ func (s *Sphere) Hit(r Ray, tMin, tMax float64) *HitRecord {
 		rec := &HitRecord{}
 		rec.T = t
 		rec.P = r.PointOnRay(t)
-		rec.Normal = rec.P.Sub(s.Center).Div(s.Radius)
+		rec.Normal = Div(rec.P.Sub(s.Center), s.Radius)
 		rec.Material = s.Material
 		return rec
 	}

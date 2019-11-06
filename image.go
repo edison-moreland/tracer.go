@@ -7,6 +7,8 @@ import (
 	"math"
 	"os"
 
+	"github.com/go-gl/mathgl/mgl64"
+
 	"github.com/disintegration/imaging"
 )
 
@@ -23,13 +25,13 @@ func NewImage(width, height int) Image {
 	}
 }
 
-func RGBASetVec3(i *image.RGBA, vecColor Vec3, x, y int) {
+func RGBASetVec3(i *image.RGBA, vecColor mgl64.Vec3, x, y int) {
 	// Map 0-1 to 0-MaxUint8 and XYZ to RGB
 	max := float64(math.MaxUint8)
 	i.Set(x, y, color.RGBA{
-		R: uint8(max * vecColor.X),
-		G: uint8(max * vecColor.Y),
-		B: uint8(max * vecColor.Z),
+		R: uint8(max * vecColor.X()),
+		G: uint8(max * vecColor.Y()),
+		B: uint8(max * vecColor.Z()),
 		A: 0xff,
 	})
 }

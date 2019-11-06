@@ -1,21 +1,25 @@
 package tracer
 
 import "C"
-import "math"
+import (
+	"math"
+
+	"github.com/go-gl/mathgl/mgl64"
+)
 
 type Camera struct {
-	Origin, lowerLeft, horizontal, vertical, u, v, w Vec3
+	Origin, lowerLeft, horizontal, vertical, u, v, w mgl64.Vec3
 	lensRadius                                       float64
 }
 
 type CameraOptions struct {
-	LookFrom, LookAt, Up                 Vec3
+	LookFrom, LookAt, Up                 mgl64.Vec3
 	Fov, Aspect, Aperture, FocusDistance float64
 }
 
 func (c *Camera) Ray(s, t float64) Ray {
 	rd := RandVec3InUnitDisk().Mul(c.lensRadius)
-	offset := c.u.Mul(rd.X).Add(c.v.Mul(rd.Y))
+	offset := c.u.Mul(rd.X()).Add(c.v.Mul(rd.Y()))
 	return Ray{
 		Origin:    c.Origin.Add(offset),
 		Direction: c.lowerLeft.Add(c.horizontal.Mul(s)).Add(c.vertical.Mul(t)).Sub(c.Origin).Sub(offset),
@@ -27,8 +31,8 @@ func NewCamera(opts CameraOptions) Camera {
 	halfHeight := math.Tan(theta / 2)
 	halfWidth := opts.Aspect * halfHeight
 
-	w := opts.LookFrom.Sub(opts.LookAt).AsUnitVector()
-	u := opts.Up.Cross(w).AsUnitVector()
+	w := opts.LookFrom.Sub(opts.LookAt).Normalize()
+	u := opts.Up.Cross(w).Normalize()
 	v := w.Cross(u)
 
 	return Camera{

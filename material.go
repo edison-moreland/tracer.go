@@ -3,10 +3,12 @@ package tracer
 import (
 	"math"
 	"math/rand"
+
+	"github.com/go-gl/mathgl/mgl64"
 )
 
 type Bounce struct {
-	Attenuation Vec3
+	Attenuation mgl64.Vec3
 	Scattered   Ray
 }
 
@@ -15,7 +17,7 @@ type Material interface {
 }
 
 type Lambertian struct {
-	Albedo Vec3
+	Albedo mgl64.Vec3
 }
 
 func (l *Lambertian) Scatter(ray Ray, rec *HitRecord) *Bounce {
@@ -30,12 +32,12 @@ func (l *Lambertian) Scatter(ray Ray, rec *HitRecord) *Bounce {
 }
 
 type Metal struct {
-	Albedo    Vec3
+	Albedo    mgl64.Vec3
 	Diffusion float64 // 0.0 to 1.0
 }
 
 func (m *Metal) Scatter(ray Ray, rec *HitRecord) *Bounce {
-	reflected := ray.Direction.AsUnitVector().Reflect(rec.Normal)
+	reflected := Reflect(ray.Direction.Normalize(), rec.Normal)
 	if reflected.Dot(rec.Normal) < 0 {
 		return nil
 	}
@@ -65,21 +67,21 @@ type Dielectric struct {
 }
 
 func (d *Dielectric) Scatter(ray Ray, rec *HitRecord) *Bounce {
-	var outwardNormal Vec3
+	var outwardNormal mgl64.Vec3
 	var niOverNt float64
 	var cosine float64
 	if ray.Direction.Dot(rec.Normal) > 0 {
-		outwardNormal = rec.Normal.Inverse()
+		outwardNormal = Inverse(rec.Normal)
 		niOverNt = d.RefractiveIndex
-		cosine = d.RefractiveIndex * ray.Direction.Dot(rec.Normal) / ray.Direction.Length()
+		cosine = d.RefractiveIndex * ray.Direction.Dot(rec.Normal) / ray.Direction.Len()
 	} else {
 		outwardNormal = rec.Normal
 		niOverNt = 1.0 / d.RefractiveIndex
-		cosine = -(ray.Direction.Dot(rec.Normal) / ray.Direction.Length())
+		cosine = -(ray.Direction.Dot(rec.Normal) / ray.Direction.Len())
 	}
 
-	direction := ray.Direction.Reflect(rec.Normal)
-	if refracted, ok := ray.Direction.Refract(outwardNormal, niOverNt); ok {
+	direction := Reflect(ray.Direction, rec.Normal)
+	if refracted, ok := Refract(ray.Direction, outwardNormal, niOverNt); ok {
 		reflectProbability := schlick(cosine, d.RefractiveIndex)
 		if rand.Float64() > reflectProbability {
 			direction = refracted
@@ -87,7 +89,7 @@ func (d *Dielectric) Scatter(ray Ray, rec *HitRecord) *Bounce {
 	}
 
 	return &Bounce{
-		Attenuation: Vec3{X: 1.0, Y: 1.0, Z: 1.0},
+		Attenuation: mgl64.Vec3{1.0, 1.0, 1.0},
 		Scattered:   Ray{rec.P, direction},
 	}
 }
