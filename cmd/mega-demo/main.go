@@ -5,16 +5,15 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/edison-moreland/tracer.go/internal"
-
 	"github.com/edison-moreland/tracer.go"
+	"github.com/edison-moreland/tracer.go/internal"
 )
 
 func main() {
 	// Render Setup
 	println("Generating scene...")
 
-	scene := internal.GenDemoScene(350, 150, 10, 20, "traced.png")
+	scene := internal.GenDemoScene(1920, 1080, 200, 20, "traced.png")
 	img := tracer.NewImage(scene.ImageOptions)
 
 	fmt.Printf("Will render %vx%v image with %v samples per pixel\n", scene.Width, scene.Height, scene.Samples)

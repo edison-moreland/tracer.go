@@ -4,6 +4,7 @@ import (
 	"image"
 	"math"
 	"math/rand"
+	"sync"
 
 	"github.com/go-gl/mathgl/mgl64"
 )
@@ -33,6 +34,20 @@ func Trace(ray Ray, world Primitive, bounces int) (color mgl64.Vec3) {
 	return BackgroundColor(ray)
 }
 
+// ToColumns splits a rectangle into n columns
+func ToColumns(rect image.Rectangle, n int) []image.Rectangle {
+	x0, y0 := rect.Min.X, rect.Min.Y
+	x1, y1 := rect.Max.X, rect.Max.Y
+
+	rects := make([]image.Rectangle, n)
+	for i := 0; i < n; i++ {
+		rects[i] = image.Rect(x0+(x1/n)*i, y0, x0+(x1/n)*(i+1), y1)
+	}
+
+	return rects
+}
+
+// RenderOptions describes all the options available to change how a scene is rendered
 type RenderOptions struct {
 	CameraOptions
 	ImageOptions
@@ -43,14 +58,14 @@ type RenderOptions struct {
 type Scene struct {
 	RenderOptions
 	camera Camera
-	world  Primitive
+	World  Primitive
 }
 
 func NewScene(options RenderOptions, world Primitive) Scene {
 	return Scene{
 		RenderOptions: options,
 		camera:        NewCamera(options.CameraOptions),
-		world:         world,
+		World:         world,
 	}
 }
 
@@ -66,12 +81,12 @@ func (s *Scene) SamplePixel(x, y float64) mgl64.Vec3 {
 		camRay := s.camera.Ray(u, v)
 
 		// Bounce around
-		color = color.Add(Trace(camRay, s.world, s.Bounces))
+		color = color.Add(Trace(camRay, s.World, s.Bounces))
 	}
 	return Div(color, float64(s.Samples))
 }
 
-func (s *Scene) RenderToRGBA(img *image.RGBA) {
+func (s *Scene) Render(img *image.RGBA) {
 	bounds := img.Bounds()
 	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
 		for x := bounds.Min.X; x < bounds.Max.X; x++ {
@@ -89,4 +104,22 @@ func (s *Scene) RenderToRGBA(img *image.RGBA) {
 			RGBASetVec3(img, color, x, y)
 		}
 	}
+}
+
+// RenderParallel renders the scene across n goroutines
+func (s *Scene) RenderParallel(img *image.RGBA, n int) {
+	var wg sync.WaitGroup
+	wg.Add(n)
+
+	for _, col := range ToColumns(img.Bounds(), n) {
+		sub := img.SubImage(col).(*image.RGBA)
+
+		// Render!
+		go func() {
+			s.Render(sub)
+			wg.Done()
+		}()
+	}
+
+	wg.Wait()
 }
