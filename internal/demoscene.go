@@ -79,7 +79,7 @@ func GenDemoScene(imgWidth, imgHeight, samples, bounces int, exportPath string) 
 			LookAt:        mgl64.Vec3{0, 0, 0},
 			Up:            mgl64.Vec3{0, 1, 0},
 			Fov:           25,
-			Aspect:        float64(300) / float64(150),
+			Aspect:        float64(imgWidth) / float64(imgHeight),
 			Aperture:      0.05,
 			FocusDistance: 10,
 		},
