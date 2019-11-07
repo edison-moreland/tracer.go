@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  build-and-test:
+  build_and_test:
     working_directory: /
     docker:
         - image: circleci/golang:1.13
