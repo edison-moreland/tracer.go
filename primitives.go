@@ -25,7 +25,7 @@ type Sphere struct {
 	Material Material
 }
 
-func (s *Sphere) Hit(r Ray, tMin, tMax float64) *HitRecord {
+func (s Sphere) Hit(r Ray, tMin, tMax float64) *HitRecord {
 	oc := r.Origin.Sub(s.Center)
 	a := r.Direction.LenSqr()
 	b := oc.Dot(r.Direction)
@@ -58,25 +58,25 @@ func (s *Sphere) Hit(r Ray, tMin, tMax float64) *HitRecord {
 }
 
 type Primitives struct {
-	p []Primitive
+	P []Primitive
 }
 
 func NewPrimitiveSlice(primitives ...Primitive) Primitives {
-	return Primitives{p: primitives}
+	return Primitives{P: primitives}
 }
 
 func (p *Primitives) AddPrimitive(primitive Primitive) {
-	p.p = append(p.p, primitive)
+	p.P = append(p.P, primitive)
 }
 
 func (p *Primitives) AddPrimitives(primitives ...Primitive) {
-	p.p = append(p.p, primitives...)
+	p.P = append(p.P, primitives...)
 }
 
-func (p *Primitives) Hit(r Ray, tMin, tMax float64) *HitRecord {
+func (p Primitives) Hit(r Ray, tMin, tMax float64) *HitRecord {
 	var rec *HitRecord = nil
 	closest := tMax
-	for _, hittable := range p.p {
+	for _, hittable := range p.P {
 		if newRec := hittable.Hit(r, tMin, closest); newRec != nil {
 			closest = newRec.T
 			rec = newRec

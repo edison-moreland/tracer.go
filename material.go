@@ -20,7 +20,7 @@ type Lambertian struct {
 	Albedo mgl64.Vec3
 }
 
-func (l *Lambertian) Scatter(ray Ray, rec *HitRecord) *Bounce {
+func (l Lambertian) Scatter(ray Ray, rec *HitRecord) *Bounce {
 	target := rec.P.Add(rec.Normal).Add(RandVec3InUnitSphere())
 	return &Bounce{
 		Attenuation: l.Albedo,
@@ -36,7 +36,7 @@ type Metal struct {
 	Diffusion float64 // 0.0 to 1.0
 }
 
-func (m *Metal) Scatter(ray Ray, rec *HitRecord) *Bounce {
+func (m Metal) Scatter(ray Ray, rec *HitRecord) *Bounce {
 	reflected := Reflect(ray.Direction.Normalize(), rec.Normal)
 	if reflected.Dot(rec.Normal) < 0 {
 		return nil
@@ -66,7 +66,7 @@ type Dielectric struct {
 	RefractiveIndex float64
 }
 
-func (d *Dielectric) Scatter(ray Ray, rec *HitRecord) *Bounce {
+func (d Dielectric) Scatter(ray Ray, rec *HitRecord) *Bounce {
 	var outwardNormal mgl64.Vec3
 	var niOverNt float64
 	var cosine float64
