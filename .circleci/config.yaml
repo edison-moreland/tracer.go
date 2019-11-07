@@ -1,17 +1,17 @@
 version: 2
-  jobs:
-    build-and-test:
-      working_directory: /
-      docker:
-          - image: circleci/golang:1.13
-      steps:
-        - run:
-            name: Install tracer
-            command: go get github.com/edison-moreland/tracer.go/cmd/demo
+jobs:
+  build-and-test:
+    working_directory: /
+    docker:
+        - image: circleci/golang:1.13
+    steps:
+      - run:
+          name: Install tracer
+          command: go get github.com/edison-moreland/tracer.go/cmd/demo
 
-        - run:
-            name: Render demo scene
-            command: demo
+      - run:
+          name: Render demo scene
+          command: demo
 
-        - store_artifacts:
-            path: /traced.png
+      - store_artifacts:
+          path: /traced.png
