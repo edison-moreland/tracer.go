@@ -13,4 +13,4 @@ jobs:
           command: demo
 
       - store_artifacts:
-          path: ~/traced.png
+          path: traced.png
