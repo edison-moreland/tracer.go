@@ -1,7 +1,6 @@
 version: 2
 jobs:
   build:
-    working_directory: /
     docker:
         - image: circleci/golang:1.13
     steps:
@@ -14,4 +13,4 @@ jobs:
           command: demo
 
       - store_artifacts:
-          path: /traced.png
+          path: ~/traced.png
